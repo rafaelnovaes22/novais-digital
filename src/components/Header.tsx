@@ -10,6 +10,7 @@ const navLinks = [
   { href: "#portfolio", label: "Portfólio" },
   { href: "#tecnologias", label: "Tecnologias" },
   { href: "#contato", label: "Contato" },
+  { href: "/briefing", label: "Briefing" },
 ];
 
 export default function Header() {
