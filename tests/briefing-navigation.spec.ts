@@ -1,96 +1,52 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Briefing - Navegação entre etapas", () => {
+test.describe("Briefing Navigation", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/briefing");
-    await expect(page.getByText("Etapa 1 de 19")).toBeVisible();
   });
 
-  test("deve avançar para a etapa 2 ao clicar em Próximo", async ({
-    page,
-  }) => {
-    await page.getByRole("button", { name: "Próximo" }).click();
+  test("navega entre os 3 passos", async ({ page }) => {
+    await expect(page.getByText("Etapa 1 de 3")).toBeVisible();
+    await expect(page.getByText("Vamos começar")).toBeVisible();
 
-    await expect(page.getByText("Etapa 2 de 19")).toBeVisible();
+    await page.getByRole("button", { name: /próximo/i }).click();
+    await expect(page.getByText("Etapa 2 de 3")).toBeVisible();
+    await expect(page.getByText("O que você precisa?")).toBeVisible();
+
+    await page.getByRole("button", { name: /próximo/i }).click();
+    await expect(page.getByText("Etapa 3 de 3")).toBeVisible();
+    await expect(page.getByText("Envie seus links")).toBeVisible();
+  });
+
+  test("volta para o passo anterior", async ({ page }) => {
+    await page.getByRole("button", { name: /próximo/i }).click();
+    await expect(page.getByText("Etapa 2 de 3")).toBeVisible();
+
+    await page.getByRole("button", { name: /anterior/i }).click();
+    await expect(page.getByText("Etapa 1 de 3")).toBeVisible();
+  });
+
+  test("botão anterior desabilitado no primeiro passo", async ({ page }) => {
+    const prevButton = page.getByRole("button", { name: /anterior/i });
+    await expect(prevButton).toBeDisabled();
+  });
+
+  test("mostra botão Enviar no último passo", async ({ page }) => {
+    await page.getByRole("button", { name: /próximo/i }).click();
+    await page.getByRole("button", { name: /próximo/i }).click();
+
     await expect(
-      page.getByRole("heading", { name: "Produtos e Serviços" })
+      page.getByRole("button", { name: /enviar/i })
     ).toBeVisible();
   });
 
-  test("deve voltar para etapa 1 ao clicar em Anterior", async ({ page }) => {
-    await page.getByRole("button", { name: "Próximo" }).click();
-    await expect(page.getByText("Etapa 2 de 19")).toBeVisible();
+  test("barra de progresso atualiza", async ({ page }) => {
+    await expect(page.getByText("33% completo")).toBeVisible();
 
-    await page.getByRole("button", { name: "Anterior" }).click();
-    await expect(page.getByText("Etapa 1 de 19")).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Identidade da Empresa" })
-    ).toBeVisible();
-  });
+    await page.getByRole("button", { name: /próximo/i }).click();
+    await expect(page.getByText("67% completo")).toBeVisible();
 
-  test("botão Anterior deve estar desabilitado na etapa 1", async ({
-    page,
-  }) => {
-    await expect(page.getByRole("button", { name: "Anterior" })).toBeDisabled();
-  });
-
-  test("deve navegar por todas as 19 etapas", async ({ page }) => {
-    test.setTimeout(60000);
-
-    const stepTitles = [
-      "Identidade da Empresa",
-      "Produtos e Serviços",
-      "Canais de Venda",
-      "Filosofia de Atendimento",
-      "Tom de Voz e Personalidade",
-      "Objetivo do Assistente",
-      "Jornada do Cliente",
-      "FAQ e Base de Conhecimento",
-      "Mídia e Conteúdo",
-      "Promoções e Ofertas",
-      "Análise de Concorrência",
-      "Localização e Filiais",
-      "Escalação e Atendimento Humano",
-      "Idiomas e Regionalização",
-      "Métricas e Indicadores de Sucesso",
-      "Catálogo de Produtos e Dados",
-      "Compliance e Requisitos Legais",
-      "Expectativas, Prazo e Investimento",
-      "Pós-Venda e Informações Adicionais",
-    ];
-
-    for (let i = 0; i < stepTitles.length; i++) {
-      await expect(page.getByText(`Etapa ${i + 1} de 19`)).toBeVisible();
-      await expect(
-        page.getByRole("heading", { name: stepTitles[i] })
-      ).toBeVisible();
-
-      if (i < stepTitles.length - 1) {
-        await page.getByRole("button", { name: "Próximo" }).click();
-        // Espera a animação de transição
-        await expect(
-          page.getByText(`Etapa ${i + 2} de 19`)
-        ).toBeVisible();
-      }
-    }
-
-    // Na última etapa, botão deve mostrar "Enviar briefing"
-    await expect(
-      page.getByRole("button", { name: "Enviar briefing" })
-    ).toBeVisible();
-  });
-
-  test("barra de progresso deve atualizar ao navegar", async ({ page }) => {
-    await expect(page.getByText("5% completo")).toBeVisible();
-
-    // Avança até etapa 10
-    for (let i = 0; i < 9; i++) {
-      await page.getByRole("button", { name: "Próximo" }).click();
-      await expect(
-        page.getByText(`Etapa ${i + 2} de 19`)
-      ).toBeVisible();
-    }
-
-    await expect(page.getByText("53% completo")).toBeVisible();
+    await page.getByRole("button", { name: /próximo/i }).click();
+    await expect(page.getByText("100% completo")).toBeVisible();
   });
 });

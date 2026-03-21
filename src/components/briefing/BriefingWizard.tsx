@@ -13,49 +13,12 @@ import { TOTAL_STEPS } from "@/lib/briefing/constants";
 import ProgressBar from "./ProgressBar";
 import StepNavigation from "./StepNavigation";
 
-// Steps (lazy loaded inline — serão implementados)
-import Step01Identity from "./steps/Step01Identity";
-import Step02Products from "./steps/Step02Products";
-import Step03Channels from "./steps/Step03Channels";
-import Step04Philosophy from "./steps/Step04Philosophy";
-import Step05Voice from "./steps/Step05Voice";
-import Step06Objectives from "./steps/Step06Objectives";
-import Step07Journey from "./steps/Step07Journey";
-import Step08FAQ from "./steps/Step08FAQ";
-import Step09Media from "./steps/Step09Media";
-import Step10Promos from "./steps/Step10Promos";
-import Step11Competition from "./steps/Step11Competition";
-import Step12Branches from "./steps/Step12Branches";
-import Step13Escalation from "./steps/Step13Escalation";
-import Step14Languages from "./steps/Step14Languages";
-import Step15Metrics from "./steps/Step15Metrics";
-import Step16Catalog from "./steps/Step16Catalog";
-import Step17Compliance from "./steps/Step17Compliance";
-import Step18Timeline from "./steps/Step18Timeline";
-import Step19PostSale from "./steps/Step19PostSale";
+import Step01Contact from "./steps/Step01Contact";
+import Step02Goal from "./steps/Step02Goal";
+import Step03Materials from "./steps/Step03Materials";
 import StepConfirmation from "./steps/StepConfirmation";
 
-const STEP_COMPONENTS = [
-  Step01Identity,
-  Step02Products,
-  Step03Channels,
-  Step04Philosophy,
-  Step05Voice,
-  Step06Objectives,
-  Step07Journey,
-  Step08FAQ,
-  Step09Media,
-  Step10Promos,
-  Step11Competition,
-  Step12Branches,
-  Step13Escalation,
-  Step14Languages,
-  Step15Metrics,
-  Step16Catalog,
-  Step17Compliance,
-  Step18Timeline,
-  Step19PostSale,
-];
+const STEP_COMPONENTS = [Step01Contact, Step02Goal, Step03Materials];
 
 export default function BriefingWizard() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -67,18 +30,6 @@ export default function BriefingWizard() {
   const methods = useForm<BriefingFormData>({
     resolver: zodResolver(briefingSchema),
     mode: "onBlur",
-    defaultValues: {
-      canaisAtivos: [],
-      objetivosPrincipais: [],
-      idiomasPrincipais: [],
-      horarioAtendimento: [],
-      perguntasFrequentes: [],
-      tiposConteudoDisponiveis: [],
-      metricasSucesso: [],
-      modalidadesEscalacao: [],
-      requisitosCompliance: [],
-      filiais: [],
-    },
   });
 
   // Carregar rascunho ao montar
@@ -104,9 +55,6 @@ export default function BriefingWizard() {
   }, [saveDraftNow]);
 
   const goNext = async () => {
-    // Validar apenas os campos da etapa atual (sem bloquear em campos opcionais de outras etapas)
-    const isValid = await methods.trigger();
-    // Optamos por avançar mesmo com erros em campos opcionais — apenas mostramos
     setDirection("next");
     if (currentStep < TOTAL_STEPS) {
       saveDraftNow();
@@ -127,7 +75,7 @@ export default function BriefingWizard() {
     setIsSubmitting(true);
     try {
       const data = methods.getValues();
-      // Enviar para API ou e-mail — por ora simula delay
+      // TODO: Enviar para API ou e-mail
       await new Promise((res) => setTimeout(res, 2000));
       clearDraft();
       setSubmitted(true);

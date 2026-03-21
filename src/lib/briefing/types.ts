@@ -8,15 +8,3 @@ export interface BriefingDraft {
   currentStep: number;
   lastSaved: string;
 }
-
-export interface FAQItem extends Record<string, string> {
-  pergunta: string;
-  resposta: string;
-}
-
-export interface Filial {
-  nome: string;
-  cidade: string;
-  estado: string;
-  telefone?: string;
-}

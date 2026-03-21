@@ -2,9 +2,9 @@ import { Metadata } from "next";
 import BriefingWizard from "@/components/briefing/BriefingWizard";
 
 export const metadata: Metadata = {
-  title: "Briefing | Novais Digital",
+  title: "Começar Projeto | Novais Digital",
   description:
-    "Preencha o formulário de briefing para configurarmos seu assistente IA personalizado.",
+    "Inicie seu projeto de assistente IA em 3 passos simples. Nossa IA analisa seus materiais automaticamente.",
 };
 
 export default function BriefingPage() {
@@ -12,12 +12,12 @@ export default function BriefingPage() {
     <main className="min-h-screen pt-24 pb-16 px-4">
       <div className="max-w-2xl mx-auto mb-10 text-center">
         <h1 className="text-3xl md:text-4xl font-bold mb-3">
-          Briefing do <span className="text-accent">Assistente IA</span>
+          Comece seu projeto em{" "}
+          <span className="text-accent">3 passos</span>
         </h1>
         <p className="text-muted max-w-lg mx-auto">
-          Responda as perguntas abaixo para que possamos configurar seu assistente
-          com precisão. O formulário salva automaticamente — você pode continuar
-          de onde parou.
+          Envie seus dados e links — nossa IA faz o trabalho pesado de analisar
+          sua empresa. Na reunião de alinhamento, você só valida o que montamos.
         </p>
       </div>
 

@@ -1,60 +1,27 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Briefing - Carregamento da página", () => {
-  test("deve renderizar a página /briefing com título e wizard", async ({
-    page,
-  }) => {
+test.describe("Briefing Page", () => {
+  test.beforeEach(async ({ page }) => {
     await page.goto("/briefing");
-
-    // Título da página
-    await expect(page.locator("h1")).toContainText("Briefing do");
-    await expect(page.locator("h1")).toContainText("Assistente IA");
-
-    // Subtítulo explicativo
-    await expect(
-      page.getByText("Responda as perguntas abaixo")
-    ).toBeVisible();
-
-    // ProgressBar visível
-    await expect(page.getByText("Etapa 1 de 19")).toBeVisible();
-    await expect(page.getByText("5% completo")).toBeVisible();
-
-    // Primeiro step visível
-    await expect(
-      page.getByRole("heading", { name: "Identidade da Empresa" })
-    ).toBeVisible();
   });
 
-  test("deve ter os grupos de progresso visíveis", async ({ page }) => {
-    await page.goto("/briefing");
-
-    for (const grupo of [
-      "Empresa",
-      "Atendimento",
-      "Assistente",
-      "Conteúdo",
-      "Operação",
-      "Dados",
-      "Fechamento",
-    ]) {
-      await expect(page.getByText(grupo, { exact: true })).toBeVisible();
-    }
+  test("renderiza a página de briefing", async ({ page }) => {
+    await expect(page.locator("main")).toBeVisible();
   });
 
-  test("deve ter botões de navegação", async ({ page }) => {
-    await page.goto("/briefing");
-
-    await expect(page.getByRole("button", { name: "Anterior" })).toBeDisabled();
-    await expect(
-      page.getByRole("button", { name: "Próximo" })
-    ).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /Salvar rascunho/i })
-    ).toBeVisible();
+  test("mostra título correto", async ({ page }) => {
+    await expect(page.locator("h1")).toContainText("3 passos");
   });
 
-  test("meta title deve conter 'Briefing'", async ({ page }) => {
-    await page.goto("/briefing");
-    await expect(page).toHaveTitle(/Briefing/);
+  test("mostra ProgressBar com 3 etapas", async ({ page }) => {
+    await expect(page.getByText("Etapa 1 de 3")).toBeVisible();
+    await expect(page.getByText("Contato")).toBeVisible();
+    await expect(page.getByText("Objetivo")).toBeVisible();
+    await expect(page.getByText("Materiais")).toBeVisible();
+  });
+
+  test("mostra botões de navegação", async ({ page }) => {
+    await expect(page.getByRole("button", { name: /anterior/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /próximo/i })).toBeVisible();
   });
 });

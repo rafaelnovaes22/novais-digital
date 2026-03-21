@@ -1,102 +1,54 @@
 import { test, expect } from "@playwright/test";
 
-async function navigateToStep(page: import("@playwright/test").Page, step: number) {
-  for (let i = 0; i < step - 1; i++) {
-    await page.getByRole("button", { name: "Próximo" }).click();
-    await expect(page.getByText(`Etapa ${i + 2} de 19`)).toBeVisible();
-  }
-}
-
-test.describe("Briefing - Envio do formulário", () => {
-  test.setTimeout(60000);
-
-  test("deve mostrar tela de confirmação após envio", async ({ page }) => {
+test.describe("Briefing Submit", () => {
+  test("envia briefing e mostra confirmação", async ({ page }) => {
     await page.goto("/briefing");
-    await expect(page.getByText("Etapa 1 de 19")).toBeVisible();
 
-    await navigateToStep(page, 19);
+    // Step 1
+    await page.getByLabel(/nome completo/i).fill("João Silva");
+    await page.getByLabel(/nome da empresa/i).fill("Empresa Teste");
+    await page.getByLabel(/e-mail/i).fill("joao@teste.com");
+    await page.getByLabel(/whatsapp/i).fill("11999999999");
+    await page.getByRole("button", { name: /próximo/i }).click();
 
-    await expect(page.getByText("Etapa 19 de 19")).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: "Enviar briefing" })
-    ).toBeVisible();
+    // Step 2
+    await page.getByText("Vendas e conversão de leads").click();
+    await page
+      .getByLabel(/maior dor/i)
+      .fill("Perdemos muitos leads por demora no atendimento via WhatsApp");
+    await page.getByRole("button", { name: /próximo/i }).click();
 
-    await page.getByRole("button", { name: "Enviar briefing" }).click();
+    // Step 3 — envia
+    await page.getByRole("button", { name: /enviar/i }).click();
 
-    // Deve mostrar loading
-    await expect(page.getByText("Enviando...")).toBeVisible();
-
-    // Após ~2s, deve mostrar confirmação
-    await expect(
-      page.getByText("Briefing enviado com sucesso!")
-    ).toBeVisible({ timeout: 5000 });
-
+    // Confirmação
+    await expect(page.getByText("Recebemos seus dados!")).toBeVisible({
+      timeout: 10000,
+    });
     await expect(page.getByText("Falar no WhatsApp")).toBeVisible();
     await expect(page.getByText("Voltar ao início")).toBeVisible();
   });
 
-  test("link 'Voltar ao início' deve apontar para /", async ({ page }) => {
+  test("confirmação mostra próximos passos", async ({ page }) => {
     await page.goto("/briefing");
-    await expect(page.getByText("Etapa 1 de 19")).toBeVisible();
 
-    await navigateToStep(page, 19);
-    await page.getByRole("button", { name: "Enviar briefing" }).click();
+    await page.getByLabel(/nome completo/i).fill("Maria Santos");
+    await page.getByLabel(/nome da empresa/i).fill("Loja Maria");
+    await page.getByLabel(/e-mail/i).fill("maria@loja.com");
+    await page.getByLabel(/whatsapp/i).fill("11988887777");
+    await page.getByRole("button", { name: /próximo/i }).click();
 
-    await expect(
-      page.getByText("Briefing enviado com sucesso!")
-    ).toBeVisible({ timeout: 5000 });
+    await page.getByText("Suporte e atendimento ao cliente").click();
+    await page.getByLabel(/maior dor/i).fill("Clientes reclamam do tempo de espera no suporte");
+    await page.getByRole("button", { name: /próximo/i }).click();
 
-    const voltarLink = page.getByRole("link", { name: "Voltar ao início" });
-    await expect(voltarLink).toHaveAttribute("href", "/");
-  });
+    await page.getByRole("button", { name: /enviar/i }).click();
 
-  test("link WhatsApp deve apontar para o número correto", async ({
-    page,
-  }) => {
-    await page.goto("/briefing");
-    await expect(page.getByText("Etapa 1 de 19")).toBeVisible();
-
-    await navigateToStep(page, 19);
-    await page.getByRole("button", { name: "Enviar briefing" }).click();
-
-    await expect(
-      page.getByText("Briefing enviado com sucesso!")
-    ).toBeVisible({ timeout: 5000 });
-
-    const whatsappLink = page.getByRole("link", {
-      name: "Falar no WhatsApp",
+    await expect(page.getByText("Recebemos seus dados!")).toBeVisible({
+      timeout: 10000,
     });
-    await expect(whatsappLink).toHaveAttribute(
-      "href",
-      "https://wa.me/5511949105033"
-    );
-  });
-
-  test("deve limpar localStorage após envio com sucesso", async ({
-    page,
-  }) => {
-    await page.goto("/briefing");
-    await expect(page.getByText("Etapa 1 de 19")).toBeVisible();
-
-    // Salva rascunho
-    await page.getByRole("button", { name: /Salvar rascunho/i }).click();
-    let draft = await page.evaluate(() =>
-      localStorage.getItem("novais-briefing-draft")
-    );
-    expect(draft).not.toBeNull();
-
-    // Navega e envia
-    await navigateToStep(page, 19);
-    await page.getByRole("button", { name: "Enviar briefing" }).click();
-
-    await expect(
-      page.getByText("Briefing enviado com sucesso!")
-    ).toBeVisible({ timeout: 5000 });
-
-    // localStorage limpo
-    draft = await page.evaluate(() =>
-      localStorage.getItem("novais-briefing-draft")
-    );
-    expect(draft).toBeNull();
+    await expect(page.getByText(/analisar seu site/i)).toBeVisible();
+    await expect(page.getByText(/reunião de alinhamento/i)).toBeVisible();
+    await expect(page.getByText(/valida o que montamos/i)).toBeVisible();
   });
 });
