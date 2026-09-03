@@ -1,0 +1,85 @@
+name: ci
+
+on:
+  push:
+    branches: [chore/ci-cd-break-before-prod, main, master]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build (next build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+
+  test:
+    name: test (lint + typecheck + playwright list)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npx tsc --noEmit
+
+  eval-smoke:
+    name: eval smoke (5 casos deterministicos)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: node evals/smoke.mjs
+
+  iso-governance:
+    name: ISO42001 validators via tsx (risco, dados, PII, clausula)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci --no-audit --no-fund
+      - run: npx tsx scripts/iso-check.ts
+
+  secret-scan:
+    name: secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Grep segredos
+        run: |
+          set -e
+          ! grep -RInE "(AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|xox[bpas]-[A-Za-z0-9-]{10,}|sk-(live|test)-[A-Za-z0-9]{10,}|-----BEGIN [A-Z ]*PRIVATE KEY-----)" --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.next --exclude="*.lock" . || (echo "SEGREDO DETECTADO" && exit 1)
+          echo "secret scan OK"
+
+  docker-build:
+    name: docker build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [build, test, eval-smoke, iso-governance, secret-scan]
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t ci-novais-digital:ci .

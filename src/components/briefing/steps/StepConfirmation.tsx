@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { CheckCircle2, Calendar, MessageCircle } from "lucide-react";
 
 export default function StepConfirmation() {
@@ -67,12 +68,12 @@ export default function StepConfirmation() {
             <MessageCircle size={18} />
             Falar no WhatsApp
           </a>
-          <a
+          <Link
             href="/"
             className="px-6 py-3 rounded-xl border border-card-border text-foreground hover:border-accent/40 transition-colors"
           >
             Voltar ao início
-          </a>
+          </Link>
         </div>
       </div>
     </div>
