@@ -1,11 +1,18 @@
 import { BriefingDraft, BriefingFormData } from "./types";
+import { sanitizeInput } from "../guardrails";
 
 const STORAGE_KEY = "novais-briefing-draft";
+
+function cleanStrings<T extends Record<string, unknown>>(data: T): T {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(data)) out[k] = typeof v === "string" ? sanitizeInput(v) : v;
+  return out as T;
+}
 
 export function saveDraft({ data, currentStep }: { data: Partial<BriefingFormData>; currentStep: number }): void {
   if (typeof window === "undefined") return;
   const draft: BriefingDraft = {
-    data,
+    data: cleanStrings(data),
     currentStep,
     lastSaved: new Date().toISOString(),
   };
